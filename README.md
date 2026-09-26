@@ -9,6 +9,14 @@
 
 > 刷写引导分区存在变砖风险。请确认型号和文件完全匹配，刷写过程中不要断电，不要使用其他设备的备份。
 
+## 成品下载
+
+[下载 v0.5.7 Windows 便携完整版](https://github.com/santian666/shualuyou/releases/download/v0.5.7/Xiaomi-Router-Flash-Assistant-v0.5.7-Portable-Full.zip)
+
+压缩包约 233 MiB，包含 EXE、AX6000/AX9000 工具目录、XMiR 和便携 Python。下载后必须完整解压，不要只取出 EXE。
+
+SHA256：`23D7AB3810C9C292147952A119781EC5235F2299DEDEE92CAE074263AFC44499`
+
 ## 主要功能
 
 - 自动识别 AX9000 / AX6000 及有线网卡
