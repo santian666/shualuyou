@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AX9000 / AX6000 自动刷机助手</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="brand"><h1>AX9000 / AX6000 自动刷机助手</h1><p id="modelSubtitle">关键节点人工确认，危险操作按机型强校验</p></div>
+    <div class="header-warning">
+      <strong>刷机前必须确认</strong>
+      <span>电脑使用网线连接路由器 LAN 2/3/4；备份来自当前这台路由器；刷写期间不断电；不要使用来源不明的引导文件。</span>
+    </div>
+    <span id="status" class="status">等待准备</span>
+  </header>
+  <main>
+    <aside class="panel settings">
+      <div class="settings-title"><h2>刷机材料与连接</h2><select id="model" aria-label="路由器型号"><option value="AX9000">小米 AX9000 / RA70</option><option value="AX6000">红米 AX6000 / RB06</option></select></div>
+      <label>SSH 解锁工具 run.bat<div class="pick"><input id="unlockTool" readonly><button data-pick="unlockTool" data-types="*.bat">选择</button></div></label>
+      <label id="developerFirmwareRow"><span id="developerFirmwareLabel">AX9000 开发版固件</span><div class="pick"><input id="developerFirmware" readonly><button data-pick="developerFirmware" data-types="*.bin">选择</button></div></label>
+      <label id="mibibRow"><span id="mibibLabel">MIBIB 文件</span><div class="pick"><input id="mibib" readonly><button data-pick="mibib" data-types="*.bin">选择</button></div></label>
+      <label><span id="ubootLabel">U-Boot 文件</span><div class="pick"><input id="uboot" readonly><button data-pick="uboot" data-types="*.bin">选择</button></div></label>
+      <label><span id="firmwareLabel">OpenWrt factory 固件</span><div class="pick"><input id="firmware" readonly><button data-pick="firmware" data-types="*.ubi;*.bin;*.itb;*.img">选择</button></div></label>
+      <label>原厂备份目录<div class="pick"><input id="backupDir" readonly placeholder="SSH 解锁后可一键自动备份"><button id="pickBackup">选择</button></div></label>
+      <label>WiFi / 小米后台密码（开始前输入一次）<input id="routerPassword" type="password" autocomplete="off" placeholder="请输入当前路由器的 WiFi / 小米后台密码"></label>
+      <div class="row"><label>SSH 地址<input id="sshHost" value="192.168.31.1"></label><label>账号<input id="sshUser" value="root"></label></div>
+      <label>SSH 密码<input id="sshPassword" type="password" value="root" autocomplete="off"></label>
+      <label>有线网卡<select id="adapter"><option value="">正在读取…</option></select></label>
+      <div class="actions"><button id="inspect" class="secondary">检查通用材料</button><button id="backupRouter" class="secondary">单独备份当前路由器</button><button id="start" class="primary" disabled>开始自动刷机流程</button><button id="resetProgress" class="danger">清零刷机进度</button><button id="cancel" class="danger" disabled>停止安全步骤</button></div>
+    </aside>
+    <section class="content">
+      <div class="panel steps-panel">
+        <div class="section-title"><h2>执行步骤</h2><span id="progress">0 / 8</span></div>
+        <ol id="steps">
+          <li data-step="0"><b>1</b><div><strong id="materialsStepTitle">通用材料校验</strong><span id="materialsStepHint">计算 MIBIB、U-Boot、factory 固件的 SHA256 并检查文件类型。</span></div></li>
+          <li data-step="1"><b>2</b><div><strong id="unlockBackupTitle">自动解锁 SSH 并完整备份</strong><span id="unlockBackupHint">软件自动调用 XMiR；必要时自动安装开发版，并下载当前设备全部 MTD 分区。</span></div></li>
+          <li data-step="2"><b>3</b><div><strong id="deviceStepTitle">设备与分区核对</strong><span id="partitionHint">程序按所选机型验证设备型号和引导分区。</span></div></li>
+          <li data-step="3"><b>4</b><div><strong id="bootWriteTitle">写入 U-Boot</strong><span id="bootWriteHint">上传后核对 SHA256，逐分区写入并回读校验。</span></div></li>
+          <li data-step="4"><b>5</b><div><strong>人工断电进入 U-Boot</strong><span id="physicalStepHint">断电 10 秒，按住 Reset 通电，黄/橙灯长亮后确认。</span></div></li>
+          <li data-step="5"><b>6</b><div><strong>自动设置静态 IP</strong><span id="networkHint">兼容 Windows 10/11，按机型设置地址并检测 U-Boot 页面。</span></div></li>
+          <li data-step="6"><b>7</b><div><strong>浏览器手动上传固件</strong><span>软件只打开 FIRMWARE UPDATE；手动选择固件，等待 100% 并完成 Update。</span></div></li>
+          <li data-step="7"><b>8</b><div><strong>恢复 DHCP 并等待后台</strong><span>点击软件“上传完成”后自动恢复 DHCP，再检测固件后台。</span></div></li>
+        </ol>
+      </div>
+      <div class="panel log-panel">
+        <div class="section-title"><div><h2>执行日志</h2><small id="logPath"></small></div><button id="clearLog">清空界面</button></div>
+        <pre id="log">等待检查材料…</pre>
+      </div>
+    </section>
+  </main>
+  <div id="materials-modal" class="modal" hidden>
+    <section class="materials-dialog" role="dialog" aria-modal="true" aria-labelledby="materials-title">
+      <h2 id="materials-title">请先下载并准备所选机型的刷机工具</h2>
+      <p>程序默认从 EXE 同级的机型文件夹读取材料。AX9000 与 AX6000 文件严禁混用。</p>
+      <ul class="materials-list">
+        <li><strong>指定解锁固件</strong><span>仅在当前固件不能直接解锁时使用，必须与所选机型一致。</span></li>
+        <li><strong>SSH 一键解锁工具包</strong><span>必须包含 <code>run.bat</code>、便携 Python 及同目录脚本。</span></li>
+        <li><strong>机型专用引导文件</strong><span>AX9000 使用 MIBIB + U-Boot；AX6000 使用教程固定 FIP。</span></li>
+        <li><strong>OpenWrt 固件</strong><span>文件名必须包含对应机型，禁止使用其他型号固件。</span></li>
+        <li><strong>当前路由器的原厂备份</strong><span>SSH 解锁后由本程序一键读取全部 MTD 分区并生成；其他路由器的备份不能使用。</span></li>
+      </ul>
+      <div class="materials-alert">AX9000 与 AX6000 的引导文件、固件和备份绝对不能混用。程序校验未通过时不要继续。</div>
+      <div class="download-actions">
+        <button id="openTutorial" class="secondary">打开教程资源页</button>
+        <button id="openFirmwareSelector" class="secondary">打开固件选择器</button>
+        <button id="materialsReady" class="primary">我已了解，进入程序</button>
+      </div>
+    </section>
+  </div>
+  <div id="resume-modal" class="modal" hidden>
+    <section role="dialog" aria-modal="true" aria-labelledby="resume-title">
+      <h2 id="resume-title">检测到未完成的刷机流程</h2>
+      <p id="resume-message"></p>
+      <div class="resume-alert">“继续上次刷机”会跳过已成功记录的步骤；“重新开始刷机”会重新执行 SSH、备份和引导分区写入。</div>
+      <div><button id="resumeRestart" class="danger">重新开始刷机</button><button id="resumeContinue" class="primary">继续上次刷机</button></div>
+    </section>
+  </div>
+  <div id="modal" class="modal" hidden>
+    <section role="dialog" aria-modal="true">
+      <h2 id="modalTitle">请确认</h2>
+      <p id="modalMessage"></p>
+      <label id="dangerCheckWrap" class="danger-check" hidden><input id="dangerCheck" type="checkbox">我确认软件将先备份并校验当前设备，并接受刷写引导分区存在变砖风险</label>
+      <div><button id="modalCancel" class="secondary">取消</button><button id="modalOpenURL" class="secondary" hidden>重新打开上传页</button><button id="modalOK" class="primary">确认，继续</button></div>
+    </section>
+  </div>
+  <div id="toast"></div>
+  <script src="main.js"></script>
+</body>
+</html>

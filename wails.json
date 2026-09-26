@@ -1,0 +1,14 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "小米路由器自动刷机助手",
+  "outputfilename": "小米路由器自动刷机助手-v0.5.7",
+  "frontend:dir": "frontend/src",
+  "frontend:install": "",
+  "frontend:build": "",
+  "frontend:dev:watcher": "",
+  "author": { "name": "" },
+  "info": {
+    "productName": "小米路由器自动刷机助手",
+    "productVersion": "0.5.7"
+  }
+}
